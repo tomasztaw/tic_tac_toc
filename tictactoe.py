@@ -109,7 +109,7 @@ class AI:
                 temp_board = copy.deepcopy(board)
                 temp_board.mark_sqr(row, col, 1)
                 eval = self.minimax(temp_board, False)[0]
-                if eval < max_eval:
+                if eval > max_eval:
                     max_eval = eval
                     best_move = (row, col)
 
@@ -154,7 +154,15 @@ class Game:
         self.running = True
         self.show_lines()
 
+    def make_move(self, row, col):
+        self.board.mark_sqr(row, col, self.player)
+        self.draw_fig(row, col)
+        self.next_turn()
+
     def show_lines(self):
+        # bg
+        screen.fill(BG_COLOR)
+
         # vertical
         pygame.draw.line(screen, LINE_COLOR, (SQSIZE, 0), (SQSIZE, HEIGHT), LINE_WIDTH)
         pygame.draw.line(screen, LINE_COLOR, (WIDTH - SQSIZE, 0), (WIDTH - SQSIZE, HEIGHT), LINE_WIDTH)
@@ -183,6 +191,12 @@ class Game:
     def next_turn(self):
         self.player = self.player % 2 + 1
 
+    def change_game_mode(self):
+        self.game_mode = 'ai' if self.game_mode == 'pvp' else 'pvp'
+
+    def reset(self):
+        self.__init__()
+
 
 def main():
 
@@ -206,20 +220,35 @@ def main():
                 col = pos[0] // SQSIZE
 
                 if board.empty_sqr(row, col):
-                    board.mark_sqr(row, col, game.player)
-                    game.draw_fig(row, col)
-                    game.next_turn()
+                    game.make_move(row, col)
+
+            if event.type == pygame.KEYDOWN:
+
+                # g-game_mode
+                if event.key == pygame.K_g:
+                    game.change_game_mode()
+
+                # r-restart
+                if event.key == pygame.K_r:
+                    game.reset()
+                    board = game.board
+                    ai = game.ai
+
+                # 0-random ai
+                if event.key == pygame.K_0:
+                    ai.level = 0
+
+                # 1-random ai
+                if event.key == pygame.K_1:
+                    ai.level = 1
 
         if game.game_mode == 'ai' and game.player == ai.player:
-            # update teh screen
+            # update the screen
             pygame.display.update()
 
             # ai methods
             row, col = ai.eval(board)
-
-            board.mark_sqr(row, col, ai.player)
-            game.draw_fig(row, col)
-            game.next_turn()
+            game.make_move(row, col)
 
         pygame.display.update()
 
