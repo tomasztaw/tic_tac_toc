@@ -20,7 +20,7 @@ class Board:
         self.empty_sqrs = self.squares # [squares]
         self.marked_sqrs = 0
 
-    def final_state(self):
+    def final_state(self, show=False    ):
         '''
             @return 0 if there is no win yet
             @return 1 if player 1 wins
@@ -30,19 +30,39 @@ class Board:
         # vertical wins
         for col in range(COLS):
             if self.squares[0][col] == self.squares[1][col] == self.squares[2][col] != 0:
+                if show:
+                    color = CIRC_COLOR if self.squares[0][col] == 2 else CROSS_COLOR
+                    iPos = (col * SQSIZE + SQSIZE // 2, 20)
+                    fPos = (col * SQSIZE + SQSIZE // 2, HEIGHT - 20)
+                    pygame.draw.line(screen, color, iPos, fPos, CROSS_WIDTH)
                 return self.squares[0][col]
 
         # horizontal wins
         for row in range(ROWS):
             if self.squares[row][0] == self.squares[row][1] == self.squares[row][2] != 0:
+                if show:
+                    color = CIRC_COLOR if self.squares[row][0] == 2 else CROSS_COLOR
+                    iPos = (20, row * SQSIZE + SQSIZE // 2)
+                    fPos = (WIDTH - 20, row * SQSIZE + SQSIZE // 2)
+                    pygame.draw.line(screen, color, iPos, fPos, CROSS_WIDTH)
                 return self.squares[row][0]
 
         # desc diagonal
         if self.squares[0][0] == self.squares[1][1] == self.squares[2][2] != 0:
+            if show:
+                color = CIRC_COLOR if self.squares[1][1] == 2 else CROSS_COLOR
+                iPos = (20, 20)
+                fPos = (WIDTH - 20, HEIGHT - 20)
+                pygame.draw.line(screen, color, iPos, fPos, CROSS_WIDTH)
             return self.squares[1][1]
 
         # asc diagonal
         if self.squares[2][0] == self.squares[1][1] == self.squares[0][2] != 0:
+            if show:
+                color = CIRC_COLOR if self.squares[1][1] == 2 else CROSS_COLOR
+                iPos = (20, HEIGHT - 20)
+                fPos = (WIDTH - 20, 20)
+                pygame.draw.line(screen, color, iPos, fPos, CROSS_WIDTH)
             return self.squares[1][1]
 
         # no win yet
@@ -149,7 +169,7 @@ class Game:
     def __init__(self):
         self.board = Board()
         self.ai = AI()
-        self.player = 1 # 1-cross X 2-circles O
+        self.player = 1 # 1-cross X 2-circles O (ai = O)
         self.game_mode = 'ai' # pvp or ai
         self.running = True
         self.show_lines()
@@ -194,6 +214,9 @@ class Game:
     def change_game_mode(self):
         self.game_mode = 'ai' if self.game_mode == 'pvp' else 'pvp'
 
+    def is_over(self):
+        return self.board.final_state(show=True) != 0 or self.board.is_full()
+
     def reset(self):
         self.__init__()
 
@@ -213,14 +236,6 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = event.pos
-                row = pos[1] // SQSIZE
-                col = pos[0] // SQSIZE
-
-                if board.empty_sqr(row, col):
-                    game.make_move(row, col)
 
             if event.type == pygame.KEYDOWN:
 
@@ -242,7 +257,18 @@ def main():
                 if event.key == pygame.K_1:
                     ai.level = 1
 
-        if game.game_mode == 'ai' and game.player == ai.player:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = event.pos
+                row = pos[1] // SQSIZE
+                col = pos[0] // SQSIZE
+
+                if board.empty_sqr(row, col) and game.running:
+                    game.make_move(row, col)
+
+                    if game.is_over():
+                        game.running = False
+
+        if game.game_mode == 'ai' and game.player == ai.player and game.running:
             # update the screen
             pygame.display.update()
 
