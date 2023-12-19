@@ -17,10 +17,10 @@ class Board:
 
     def __init__(self):
         self.squares = np.zeros((ROWS, COLS))
-        self.empty_sqrs = self.squares # [squares]
+        self.empty_sqrs = self.squares  # [squares]
         self.marked_sqrs = 0
 
-    def final_state(self, show=False    ):
+    def final_state(self, show=False):
         '''
             @return 0 if there is no win yet
             @return 1 if player 1 wins
@@ -101,7 +101,7 @@ class AI:
         empty_sqrs = board.get_empty_sqrs()
         idx = random.randrange(0, len(empty_sqrs))
 
-        return empty_sqrs[idx] # (row, col)
+        return empty_sqrs[idx]  # (row, col)
 
     def minimax(self, board, maximizing):
 
@@ -110,7 +110,7 @@ class AI:
 
         # player 1 wins
         if case == 1:
-            return 1, None # eval, move
+            return 1, None  # eval, move
 
         # player 2 wins
         if case == 2:
@@ -159,9 +159,9 @@ class AI:
             # minimax algo choice
             eval, move = self.minimax(main_board, False)
 
-        print(f'AI has chosen to mark the square in pos {move} with an eval of {eval}')
+        print(f'AI has chosen to mark the square in pos {move} with an eval of: {eval}')
 
-        return move # row, col
+        return move  # row, col
 
 
 class Game:
@@ -169,8 +169,8 @@ class Game:
     def __init__(self):
         self.board = Board()
         self.ai = AI()
-        self.player = 1 # 1-cross X 2-circles O (ai = O)
-        self.game_mode = 'ai' # pvp or ai
+        self.player = 1  # 1-cross # 2-circles O (ai = O)
+        self.game_mode = 'ai'  # pvp or ai
         self.running = True
         self.show_lines()
 
@@ -275,6 +275,9 @@ def main():
             # ai methods
             row, col = ai.eval(board)
             game.make_move(row, col)
+
+            if game.is_over():
+                game.running = False
 
         pygame.display.update()
 
